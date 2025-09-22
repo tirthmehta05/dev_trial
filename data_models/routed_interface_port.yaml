@@ -1,0 +1,104 @@
+fields:
+  topology:
+    type: model
+    required: true
+    model:
+      fields:
+        switches:
+          type: list[model]
+          required: true
+          model:
+            fields:
+              name:
+                type: str
+                required: true
+              interfaces:
+                type: list[model]
+                required: true
+                model: # This is the 'topology_switch_routed_interface' model
+                  fields:
+                    name:
+                      type: str
+                      required: true
+                      validation:
+                        pattern: '(?i)^(?:e|eth(?:ernet)?)\d(?:\/\d+){1,2}$'
+                    mode:
+                      type: str
+                      required: true
+                      validation:
+                        choices: ['routed']
+                    description:
+                      type: str
+                      required: false
+                      default: 'NetAsCode Routed Interface'
+                      validation:
+                        max_length: 256
+                    vrf:
+                      type: str
+                      required: false
+                    mtu:
+                      type: int
+                      required: false
+                      default: 9216
+                      validation:
+                        ge: 1500
+                        le: 9216
+                    speed:
+                      type: str
+                      required: false
+                      default: 'auto'
+                      validation:
+                        pattern: '(?i)^(auto|100mb|1gb|10gb|25gb|40gb|100gb|200gb|400gb|800gb)$'
+                    enabled:
+                      type: bool
+                      required: false
+                      default: true
+                    ipv4_address:
+                      type: str # IP address with mask
+                      required: false
+                    ipv4_route_tag:
+                      type: int
+                      required: false
+                      validation:
+                        ge: 0
+                        le: 4294967295
+                    secondary_ipv4_addresses:
+                      type: list[model]
+                      required: false
+                      model:
+                        fields:
+                          ip_address:
+                            type: str # IP address with mask
+                            required: true
+                          route_tag:
+                            type: int
+                            required: false
+                            validation:
+                              ge: 0
+                              le: 4294967295
+                    ipv6_address:
+                      type: str # IP address with mask
+                      required: false
+                    ipv6_route_tag:
+                      type: int
+                      required: false
+                      validation:
+                        ge: 0
+                        le: 4294967295
+                    secondary_ipv6_addresses:
+                      type: list[model]
+                      required: false
+                      model:
+                        fields:
+                          ip_address:
+                            type: str # IP address with mask
+                            required: true
+                          route_tag:
+                            type: int
+                            required: false
+                            validation:
+                              ge: 0
+                              le: 4294967295
+                    freeform_config:
+                      type: str
+                      required: false

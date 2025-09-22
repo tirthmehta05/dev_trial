@@ -1,7 +1,10 @@
 from fastapi import FastAPI
+from .app.controllers import config_controller
 
-app = FastAPI()
+app = FastAPI(title="Dynamic Configuration API")
 
-@app.get("/api/data")
-def get_data():
-    return {"message": "Hello from FastAPI!"}
+app.include_router(config_controller.router, prefix="/api")
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Dynamic Configuration API"}

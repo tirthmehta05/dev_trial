@@ -1,0 +1,86 @@
+# Schema for the VXLAN topology data model
+fields:
+  topology:
+    type: model
+    required: true
+    model:
+      fields:
+        switches:
+          type: list[model]
+          required: true
+          model:
+            fields:
+              name: # Field from your example YAML
+                type: str
+                required: true
+              interfaces:
+                type: list[model]
+                required: true
+                model: # This is the 'topology_switch_access_interface' model
+                  fields:
+                    name:
+                      type: str
+                      required: true
+                      validation:
+                        pattern: '^(?:e|eth(?:ernet)?)\d(?:\/\d+){1,2}$'
+                    mode:
+                      type: str
+                      required: true
+                      validation: # Enums can be handled with a list of choices
+                        choices: ['access']
+                    description:
+                      type: str
+                      required: false
+                      default: 'NetAsCode Access Interface'
+                      validation:
+                        max_length: 256
+                    mtu:
+                      required: false
+                      default: 'jumbo'
+                      union:
+                        - type: int
+                          validation:
+                            ge: 1500
+                            le: 9216
+                        - type: str
+                          validation:
+                            choices: ['default', 'jumbo']
+                    speed:
+                      type: str
+                      required: false
+                      default: 'auto'
+                      validation:
+                        pattern: '(?i)^(auto|100mb|1gb|10gb|25gb|40gb|100gb|200gb|400gb|800gb)$'
+                    enabled:
+                      type: bool
+                      required: false
+                      default: true
+                    access_vlan:
+                      label: "Access VLAN ID"
+                      type: int
+                      required: false
+                      default: 1
+                      validation:
+                        ge: 1 # Greater than or equal to
+                        le: 4094 # Less than or equal to
+                    spanning_tree_portfast:
+                      type: bool
+                      required: false
+                      default: true
+                    enable_bpdu_guard:
+                      type: bool
+                      required: false
+                      default: true
+                    duplex:
+                      type: str
+                      required: false
+                      default: 'auto'
+                      validation:
+                        choices: ['auto', 'full', 'half']
+                    orphan_port:
+                      type: bool
+                      required: false
+                      default: false
+                    freeform_config:
+                      type: str
+                      required: false

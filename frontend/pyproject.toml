@@ -2,6 +2,8 @@
 name = "frontend"
 version = "0.1.0"
 dependencies = [
-    "streamlit",
+    "streamlit==1.48.0",
     "requests",
+    "pyyaml",
+    "pyarrow==15.0.0",
 ]
