@@ -1,4 +1,4 @@
-from pydantic import create_model, Field, BaseModel
+from pydantic import create_model, Field, BaseModel, conlist
 from pydantic.types import constr, conint
 from typing import List, Optional, Any, Literal, Union
 
@@ -33,7 +33,7 @@ class ModelService:
                 )
             return Union[*union_types]
 
-        field_type = props['type']
+        field_type = props.get('type', 'str')
         validation = props.get('validation', {})
 
         if 'choices' in validation:
@@ -42,11 +42,16 @@ class ModelService:
             return self._create_model_from_schema(
                 f"{model_name}_{field_name}", props['model']['fields']
             )
-        elif field_type.startswith('list[model]'):
+        elif field_type == 'list[model]':
             nested_model = self._create_model_from_schema(
                 f"{model_name}_{field_name}_item", props['model']['fields']
             )
             return List[nested_model]
+        elif field_type == 'list[str]':
+            if 'pattern' in validation:
+                return conlist(constr(pattern=validation['pattern']), min_length=1)
+            else:
+                return List[str]
         else:  # Basic type
             return TYPE_MAPPING.get(field_type, Any)
 
@@ -64,15 +69,18 @@ class ModelService:
 
             default = field_props.get('default', ... if is_required else None)
             validation = field_props.get('validation', {})
-
             field_args = {'default': default}
-            if 'pattern' in validation:
+
+            # Apply validation only if it hasn't been handled by the type parser already
+            if field_props.get('type') == 'str' and 'pattern' in validation:
                 field_args['pattern'] = validation['pattern']
-            if 'ge' in validation:
-                field_args['ge'] = validation['ge']
-            if 'le' in validation:
-                field_args['le'] = validation['le']
-            if 'max_length' in validation:
+            if field_props.get('type') in ['int', 'float']:
+                if 'ge' in validation:
+                    field_args['ge'] = validation['ge']
+                if 'le' in validation:
+                    field_args['le'] = validation['le']
+
+            if field_props.get('type') == 'str' and 'max_length' in validation:
                 field_args['max_length'] = validation['max_length']
 
             fields[field_name] = (field_type_hint, Field(**field_args))
