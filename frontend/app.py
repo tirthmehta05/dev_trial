@@ -35,17 +35,12 @@ def render_form_inputs(schema_fields, is_advanced, parent_key=""):
     data = {}
     for field_name, props in schema_fields.items():
         widget_key = f"{parent_key}_{field_name}"
-        is_required = props.get('required', False)
-
-        if not is_required and not is_advanced:
-            continue
-
-        label = props.get('label', field_name.replace('_', ' ').title())
-        st.markdown(f"**{label}**{' *' if is_required else ''}")
-
         field_type = props.get('type', 'str')
+        label = props.get('label', field_name.replace('_', ' ').title())
 
+        # Structural elements should always be rendered, the check is for leaf nodes.
         if field_type == 'list[model]':
+            st.markdown(f"**{label}**{' *' if props.get('required', False) else ''}")
             items = st.session_state.get(widget_key, [])
             data[field_name] = []
             for i, item_data in enumerate(items):
@@ -57,6 +52,7 @@ def render_form_inputs(schema_fields, is_advanced, parent_key=""):
                     data[field_name].append(item_form_data)
         
         elif field_type == 'list[str]':
+            st.markdown(f"**{label}**{' *' if props.get('required', False) else ''}")
             items = st.session_state.get(widget_key, [])
             data[field_name] = []
             for i, item_text in enumerate(items):
@@ -65,16 +61,23 @@ def render_form_inputs(schema_fields, is_advanced, parent_key=""):
                 data[field_name].append(new_text)
 
         elif 'union' in props:
+            st.markdown(f"**{label}**{' *' if props.get('required', False) else ''}")
             type_choices = [t.get('type', 'str') for t in props['union']]
             selected_type = st.selectbox(f"Choose type for {label}", type_choices, key=f"{widget_key}_type_selector")
             selected_schema = next(t for t in props['union'] if t.get('type', 'str') == selected_type)
             data[field_name] = render_form_inputs({field_name: selected_schema}, is_advanced, parent_key=widget_key)[field_name]
 
         elif field_type == 'model':
+            st.markdown(f"**{label}**{' *' if props.get('required', False) else ''}")
             with st.expander(f"{label} Details", expanded=True):
                 data[field_name] = render_form_inputs(props['model']['fields'], is_advanced, parent_key=widget_key)
 
-        else:  # Handle basic types
+        else:  # This is a leaf node, apply the advanced check here.
+            is_required = props.get('required', False)
+            if not is_required and not is_advanced:
+                continue
+            
+            st.markdown(f"**{label}**{' *' if is_required else ''}")
             default = props.get('default')
             validation = props.get('validation', {})
 
@@ -92,11 +95,6 @@ def manage_dynamic_lists(schema_fields, is_advanced, parent_key=""):
     """Renders the Add/Remove buttons for list fields OUTSIDE the form."""
     for field_name, props in schema_fields.items():
         widget_key = f"{parent_key}_{field_name}"
-        is_required = props.get('required', False)
-
-        if not is_required and not is_advanced:
-            continue
-
         field_type = props.get('type', 'str')
 
         if field_type == 'list[model]':
@@ -137,7 +135,9 @@ def manage_dynamic_lists(schema_fields, is_advanced, parent_key=""):
                     st.rerun()
 
         elif field_type == 'model':
-            manage_dynamic_lists(props['model']['fields'], is_advanced, parent_key=widget_key)
+            label = props.get('label', field_name.replace('_', ' ').title())
+            with st.expander(f"Controls for {label}"):
+                manage_dynamic_lists(props['model']['fields'], is_advanced, parent_key=widget_key)
 
 # --- Main Application ---
 st.set_page_config(layout="wide")

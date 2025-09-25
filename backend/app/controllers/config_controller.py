@@ -16,8 +16,8 @@ def get_schema_repository():
 def get_model_service(repo: SchemaRepository = Depends(get_schema_repository)):
     return ModelService(repo)
 
-def get_config_service():
-    return ConfigService()
+def get_config_service(repo: SchemaRepository = Depends(get_schema_repository)):
+    return ConfigService(repo)
 
 # --- --- #
 

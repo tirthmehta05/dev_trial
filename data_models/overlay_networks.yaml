@@ -1,0 +1,141 @@
+root_key: vxlan
+fields:
+  overlay:
+    type: model
+    required: true
+    model:
+      fields:
+        networks:
+          type: list[model]
+          required: false
+          model:
+            fields:
+              name:
+                type: str
+                required: true
+              is_l2_only:
+                type: bool
+                required: false
+                default: false
+              vrf_name:
+                type: str
+                required: false
+              net_id:
+                type: int
+                required: false
+                validation: { ge: 1, le: 16777214 }
+              vlan_id:
+                type: int
+                required: false
+                validation: { ge: 1, le: 4094 }
+              vlan_name:
+                type: str
+                required: false
+              int_desc:
+                type: str
+                required: false
+              gw_ip_address:
+                type: str
+                required: false
+              gw_ipv6_address:
+                type: str
+                required: false
+              secondary_ip_addresses:
+                type: list[model]
+                required: false
+                model:
+                  fields:
+                    ip_address:
+                      type: str
+                      required: true
+                    route_tag:
+                      type: int
+                      required: false
+                      validation: { ge: 0, le: 4294967295 }
+              mtu_l3intf:
+                type: int
+                required: false
+                default: 9216
+              l3gw_on_border:
+                type: bool
+                required: false
+                default: false
+              route_tag:
+                type: int
+                required: false
+                default: 12345
+                validation: { ge: 0, le: 4294967295 }
+              multicast_group_address:
+                type: str
+                required: false
+                default: '239.1.1.1'
+              arp_suppress:
+                type: bool
+                required: false
+              route_target_both:
+                type: bool
+                required: false
+                default: false
+              dhcp_loopback_id:
+                type: int
+                required: false
+                validation: { ge: 0, le: 1023 }
+              dhcp_servers:
+                type: list[model]
+                required: false
+                model:
+                  fields:
+                    ip_address:
+                      type: str
+                      required: true
+                    vrf:
+                      type: str
+                      required: true
+              netflow_enable:
+                type: bool
+                required: false
+                default: false
+              vlan_netflow_monitor:
+                type: str
+                required: false
+              trm_enable:
+                type: bool
+                required: false
+                default: false
+              network_attach_group:
+                type: str
+                required: false
+        network_attach_groups:
+          type: list[model]
+          required: false
+          model:
+            fields:
+              name:
+                type: str
+                required: true
+              switches:
+                type: list[model]
+                required: false
+                model:
+                  fields:
+                    hostname:
+                      type: str
+                      required: true
+                    ports:
+                      type: list[str]
+                      required: false
+                      validation:
+                        pattern: '(?i)^(?:e|eth(?:ernet)?)((\d)/\d{1,3})$|^(?:po|port-channel)([1-9]|[1-9][0-9]{1,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-6])$'
+                    tors:
+                      type: list[model]
+                      required: false
+                      model:
+                        fields:
+                          hostname:
+                            type: str
+                            required: true
+                          ports:
+                            type: list[str]
+                            required: false
+                            validation:
+                              pattern: '(?i)^(?:e|eth(?:ernet)?)((\d)/\d{1,3})$|^(?:po|port-channel)([1-9]|[1-9][0-9]{1,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-6])$'
